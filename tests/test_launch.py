@@ -10,6 +10,9 @@ from aiida.orm import AbstractCode, Computer, Float, Int, RemoteData, Singlefile
 from aiida_shell.calculations.shell import ShellJob
 from aiida_shell.launch import launch_shell_job, prepare_computer
 
+DATE_COMMAND = shutil.which('date')
+assert DATE_COMMAND is not None, 'The `date` command must be available in order to run the tests.'
+
 
 class ShellWorkChain(WorkChain):
     """Implementation of :class:`aiida.engine.processes.workchains.workchain.WorkChain` that submits a ``ShellJob``."""
@@ -86,7 +89,7 @@ def test_arguments():
     shellfunction runs just before midnight and the comparison ``datetime`` call runs in the next day causing the test
     to fail, but that seems extremely unlikely.
     """
-    arguments = ['--iso-8601']
+    arguments = ['-I']  # equivalent to --iso-8601, but supported also on MacOS
     results, node = launch_shell_job('date', arguments=arguments)
 
     assert node.is_finished_ok
@@ -273,7 +276,7 @@ def test_submit_inside_workfunction(submit_and_await):
 @pytest.mark.parametrize(
     'resolve_command, executable',
     (
-        (True, '/usr/bin/date'),
+        (True, DATE_COMMAND),
         (False, 'date'),
     ),
 )
